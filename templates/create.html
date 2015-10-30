@@ -5,17 +5,14 @@
   <!-- 'viewport' is used by bootstrap to respond to device size -->
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <!-- Javascript:  JQuery from a content distribution network (CDN) -->
-  <script
-     src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js">
-  </script>
+  <script type="text/javascript" src="/static/bower_components/jquery/dist/jquery.min.js"></script>
+  <script type="text/javascript" src="/static/bower_components/moment/min/moment.min.js"></script>
+  <script type="text/javascript" src="/static/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+  <script type="text/javascript" src="/static/bower_components/eonasdan-bootstrap-datetimepicker/build/js/bootstrap-datetimepicker.min.js"></script>
 
   <!-- Bootstrap includes javascript and css  (must follow jquery) -->
   <link rel="stylesheet"
    href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
-   <script
-    src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js">
-</script>
 
    <!-- Our own style sheet -->
    <link rel="stylesheet" href="/static/css/memos.css" />
@@ -37,18 +34,27 @@
   {% endif %}
 {% endwith %}
 
-<form method="PUT" action="_create">
+<form method="POST" action="_create">
 <div class="row">
     <div class="col-md-2">
-    <input type="text" class="form-control"
-     name="Date" value=""/>
+    <input type='text' class="form-control" name="date" id='datetimepicker4' />
   </div>
   <div class="col-md-10">
     <input type="text" class="form-control"
       name="Memo" value="Memo" />
   </div>
+  <button>text</button>
+
+
  </div>
 </form>
-</div> 
+</div>
+<script type="text/javascript">
+    $(function () {
+        $('#datetimepicker4').datetimepicker({
+          format: 'MM/DD/YYYY'
+        });
+    });
+</script> 
 </body>
 </html>

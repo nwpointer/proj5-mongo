@@ -17,6 +17,8 @@ Representation conventions for dates:
 import flask
 from flask import render_template
 from flask import request
+from flask import redirect
+from flask import flash
 from flask import url_for
 
 import json
@@ -29,6 +31,7 @@ from dateutil import tz  # For interpreting local times
 
 # Mongo database
 from pymongo import MongoClient
+from bson.objectid import ObjectId
 
 
 ###
@@ -54,21 +57,40 @@ app.secret_key = str(uuid.uuid4())
 # Pages
 ###
 
-@app.route("/")
 @app.route("/index")
+@app.route("/")
 def index():
   app.logger.debug("Main page entry")
   flask.session['memos'] = get_memos()
-  for memo in flask.session['memos']:
-      app.logger.debug("Memo: " + str(memo))
+  # for memo in flask.session['memos']:
+  #     app.logger.debug("Memo: " + str(memo))
   return flask.render_template('index.html')
 
 
 # We don't have an interface for creating memos yet
-# @app.route("/create")
-# def create():
-#     app.logger.debug("Create")
-#     return flask.render_template('create.html')
+@app.route("/create", methods=["GET"])
+def create():
+    app.logger.debug("Create")
+    return flask.render_template('create.html')
+
+@app.route("/_create", methods=["POST"])
+def _create():
+    f = request.form
+    try:
+      put_memo(arrow.get(f["date"], 'MM/DD/YYYY'), f["Memo"])
+    except:
+      flash('a random error has appeared')
+      return redirect(url_for('create'))
+    return redirect(url_for('index'))
+
+@app.route('/rm/<id>')
+def rm(id):
+    print(id)
+    try:
+      memo = destroy_memo(str(id));
+    except:
+      flash('uuhm.... nope. delete failed')
+    return redirect(url_for('index'))
 
 
 @app.errorhandler(404)
@@ -126,27 +148,34 @@ def get_memos():
     can be inserted directly in the 'session' object.
     """
     records = [ ]
-    for record in collection.find( { "type": "dated_memo" } ):
+    results = collection.find( { "type": "dated_memo" } )
+    results.sort('date', -1)
+    for record in results:
         record['date'] = arrow.get(record['date']).isoformat()
-        del record['_id']
+        record['_id'] = str(record['_id']);
+        # del record['_id']
         records.append(record)
     return records 
 
 
-# def put_memo(dt, mem):
-#     """
-#     Place memo into database
-#     Args:
-#        dt: Datetime (arrow) object
-#        mem: Text of memo
-#     NOT TESTED YET
-#     """
-#     record = { "type": "dated_memo", 
-#                "date": dt.to('utc').naive,
-#                "text": mem
-#             }
-#     collection.insert(record)
-#     return 
+def put_memo(dt, mem):
+    """
+    Place memo into database
+    Args:
+       dt: Datetime (arrow) object
+       mem: Text of memo
+    NOT TESTED YET
+    """
+    record = { "type": "dated_memo", 
+               "date": dt.to('utc').naive,
+               "text": mem
+            }
+    collection.insert(record)
+    return 
+
+def destroy_memo(objId):
+  collection.remove({'_id': ObjectId(objId)})
+  return
 
 
 if __name__ == "__main__":
@@ -162,6 +191,6 @@ if __name__ == "__main__":
         app.run(port=CONFIG.PORT)
     else:
         # Reachable from anywhere 
-        app.run(port=CONFIG.PORT,host="0.0.0.0")
+        app.run(port=CONFIG.PORT,host="127.0.0.1")
 
     

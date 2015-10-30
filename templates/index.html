@@ -36,17 +36,20 @@
   {% endif %}
 {% endwith %}
 
-<h1>Memos</h1>
+<h1>Memos <a href="/create">+</a></h1>
 
 {% if session.memos %}
     {% for memo in session.memos %}
   <div class="memo">
   <div class="row">
-  <div class="col-md-2">
+  <div class="col-xs-4 col-md-2">
     {{ memo.date | humanize }}
   </div>
-  <div class="col-md-10">
+  <div class="col-xs-4 col-md-2">
     {{ memo.text }}
+  </div>
+  <div class="col-xs-4 col-md-2">
+    <a href="/rm/{{ memo._id }}" >delete</a>
   </div>
   </div> <!-- row -->
   </div> <!-- memo -->
